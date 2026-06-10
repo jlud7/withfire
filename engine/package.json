@@ -1,0 +1,19 @@
+{
+  "name": "withfire-engine",
+  "version": "0.1.0",
+  "description": "Rules engine and AI for With Fire — a bluffing card game.",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "files": ["dist", "src", "README.md"],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx src/__tests__/smoke.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}

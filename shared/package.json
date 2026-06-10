@@ -1,0 +1,17 @@
+{
+  "name": "withfire-shared",
+  "version": "0.1.0",
+  "description": "Wire protocol and redacted-view types shared by the With Fire server and client.",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "withfire-engine": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

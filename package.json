@@ -1,0 +1,23 @@
+{
+  "name": "withfire",
+  "private": true,
+  "version": "1.0.0",
+  "description": "With Fire — a bluffing card game. Engine, server, and web client with online multiplayer.",
+  "type": "module",
+  "workspaces": [
+    "engine",
+    "shared",
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=server & npm run dev --workspace=client & wait",
+    "build": "npm run build --workspace=client",
+    "start": "npm run start --workspace=server",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspace=engine"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

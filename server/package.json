@@ -1,0 +1,22 @@
+{
+  "name": "withfire-server",
+  "version": "1.0.0",
+  "description": "Authoritative game server for With Fire — rooms, WebSockets, AI seats.",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "tsx": "^4.19.0",
+    "withfire-engine": "*",
+    "withfire-shared": "*",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.5.0",
+    "typescript": "^5.0.0"
+  }
+}
