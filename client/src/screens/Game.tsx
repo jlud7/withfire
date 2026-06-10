@@ -13,9 +13,13 @@ export interface GameProps {
   onShowRules: () => void;
 }
 
+function nth(n: number) {
+  return n === 1 ? "1st" : n === 2 ? "2nd" : n === 3 ? "3rd" : `${n}th`;
+}
+
 function flamePips(points: number) {
   return (
-    <span className="pips" title={`${points} / 2 Burn Marks`}>
+    <span className="pips" title={`${points} / 2 Embers — two win the game`}>
       {[0, 1].map((i) => (
         <span key={i} className={`pip ${i < points ? "pip-lit" : ""}`}>🔥</span>
       ))}
@@ -30,18 +34,24 @@ function Pod({
   isYou,
   canPick,
   onPick,
+  order,
 }: {
   p: PlayerView;
   view: GameView;
   isYou: boolean;
   canPick: boolean;
   onPick: () => void;
+  /** 1-based position in this round's turn order (1 = leads the round). */
+  order?: number;
 }) {
   const r = view.round;
   const isTurn = r ? r.current === p.id && !r.reveal && !r.resolved : false;
   const isChallenger = r?.challenge?.by === p.id;
   const stepped = r?.steppedBack.includes(p.id) ?? false;
   const isDarer = r?.reveal?.darer === p.id;
+  // Hold/hover your own stack to lift the cards and peek at their faces.
+  const [peek, setPeek] = useState(false);
+  const hasHidden = p.placed.some((s) => !s.revealed);
   // The top un-revealed card (LIFO) — the only one that can flip next.
   let topIdx = -1;
   for (let i = p.placed.length - 1; i >= 0; i--) {
@@ -64,6 +74,14 @@ function Pod({
     >
       <div className="pod-head">
         <span className="pod-name">
+          {order !== undefined && !p.eliminated && (
+            <span
+              className="seat-token"
+              title={order === 1 ? "Leads this round" : `Goes ${nth(order)} this round`}
+            >
+              {order}
+            </span>
+          )}
           {p.name}
           {isYou && <em> (you)</em>}
         </span>
@@ -79,43 +97,59 @@ function Pod({
             </span>
             {p.isAI && <span className="chip chip-bot">{p.personaTrait ?? "AI"}</span>}
             {!p.connected && <span className="chip">offline</span>}
+            {isTurn && (
+              <span className="chip chip-turn">
+                {isYou ? "your turn" : p.isAI ? "thinking" : "deciding"}
+              </span>
+            )}
             {isChallenger && !r?.reveal && <span className="chip chip-dare">dares {r?.challenge?.n}</span>}
             {isDarer && <span className="chip chip-dare">revealing</span>}
             {stepped && r?.challenge && !r?.reveal && <span className="chip">stepped back</span>}
           </>
         )}
       </div>
-      <div className={`stack ${canPick ? "stack-pickable" : ""}`}>
+      <div
+        className={[
+          "stack",
+          canPick ? "stack-pickable" : "",
+          isYou && peek ? "stack-peek" : "",
+        ].join(" ")}
+        onPointerEnter={isYou ? (e) => e.pointerType === "mouse" && setPeek(true) : undefined}
+        onPointerDown={isYou ? () => setPeek(true) : undefined}
+        onPointerUp={isYou ? () => setPeek(false) : undefined}
+        onPointerLeave={isYou ? () => setPeek(false) : undefined}
+        onPointerCancel={isYou ? () => setPeek(false) : undefined}
+      >
         {p.placed.length === 0 && <div className="stack-empty">—</div>}
         {p.placed.map((slot, idx) => {
           const pickable = canPick && idx === topIdx;
           return (
-            <CardFace
-              key={idx}
-              kind={slot.kind ?? "flower"}
-              flipped={slot.revealed}
-              size={isYou ? "md" : "sm"}
-              pulse={pickable}
-              onClick={pickable ? onPick : undefined}
-              title={
-                isYou && !slot.revealed && slot.kind
-                  ? `You placed: ${slot.kind} (only you can see this)`
-                  : undefined
-              }
-            />
+            <div key={idx} className="stack-slot">
+              <CardFace
+                kind={slot.kind ?? "flower"}
+                flipped={slot.revealed || (isYou && peek && !!slot.kind)}
+                badge={isYou && !slot.revealed && slot.kind ? slot.kind : undefined}
+                size={isYou ? "md" : "sm"}
+                pulse={pickable}
+                onClick={pickable ? onPick : undefined}
+                title={
+                  isYou && !slot.revealed && slot.kind
+                    ? `You placed: ${slot.kind} (only you can see this)`
+                    : undefined
+                }
+              />
+              {isYou && idx === topIdx && p.placed.length > 1 && (
+                <span className="stack-top-tag">top</span>
+              )}
+            </div>
           );
         })}
-        {/* Private peek at what you placed, bottom-up. */}
-        {isYou && p.placed.some((s) => !s.revealed) && (
-          <div className="peek">
-            {p.placed.map((s, i) => (
-              <span key={i} className={`peek-dot ${s.revealed ? "peek-rev" : ""}`}>
-                {s.kind === "fire" ? "🔥" : "🌸"}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
+      {isYou && hasHidden && (
+        <div className="stack-hint">
+          {peek ? "🤫 only you can see these" : "hold your stack to peek · top flips first"}
+        </div>
+      )}
     </div>
   );
 }
@@ -132,6 +166,20 @@ export function Game({ view, mode, code, isHost, onAct, onBackToLobby, onLeave, 
     // Rotate so opponents read left→right in turn order after you.
     return [...sorted.slice(myIdx + 1), ...sorted.slice(0, myIdx)];
   }, [view.players, view.you]);
+
+  // This round's turn order: 1 = the round's leader, counting around the
+  // table through the still-active players.
+  const orderOf = useMemo(() => {
+    const m = new Map<string, number>();
+    if (!r) return m;
+    const active = [...view.players]
+      .sort((a, b) => a.seat - b.seat)
+      .filter((p) => !p.eliminated);
+    const si = active.findIndex((p) => p.id === r.starter);
+    if (si < 0) return m;
+    active.forEach((p, i) => m.set(p.id, ((i - si + active.length) % active.length) + 1));
+    return m;
+  }, [view.players, r?.starter]);
 
   const totalOnTable = view.players.reduce((s, p) => s + p.placed.length, 0);
   const ch = r?.challenge ?? null;
@@ -182,7 +230,9 @@ export function Game({ view, mode, code, isHost, onAct, onBackToLobby, onLeave, 
     stage = (
       <div className="stage-col">
         <div className="stage-title">
-          {burned ? `${nameOf(burned)} got burned` : `${nameOf(rv?.darer)} survived the dare!`}
+          {burned
+            ? `${nameOf(burned)} got burned`
+            : `${nameOf(rv?.darer)} claims an Ember! 🔥`}
         </div>
         {r.yourBurnedCard && (
           <div className="stage-note stage-private">
@@ -200,7 +250,14 @@ export function Game({ view, mode, code, isHost, onAct, onBackToLobby, onLeave, 
             ? rv.burned
               ? "🔥 FIRE!"
               : "🌸 Safe — dare complete!"
-            : `${nameOf(rv.darer)} reveals ${rv.flippedCount} / ${rv.target}`}
+            : `${nameOf(rv.darer)} reveals…`}
+        </div>
+        <div className="reveal-pips" title={`${rv.flippedCount} of ${rv.target} flipped`}>
+          {Array.from({ length: rv.target }).map((_, i) => (
+            <span key={i} className={`rpip ${i < rv.flippedCount ? "rpip-lit" : ""}`}>
+              {rv.done && rv.burned && i === rv.flippedCount - 1 ? "🔥" : "🌸"}
+            </span>
+          ))}
         </div>
         {!rv.done && (
           <div className="stage-note">
@@ -237,6 +294,11 @@ export function Game({ view, mode, code, isHost, onAct, onBackToLobby, onLeave, 
               : "Place your first card, face down."
             : `Waiting on ${nameOf(r?.current)}…`}
         </div>
+        {totalOnTable > 0 && (
+          <div className="stage-count">
+            {totalOnTable} {totalOnTable === 1 ? "card" : "cards"} on the table
+          </div>
+        )}
       </div>
     );
   }
@@ -270,6 +332,7 @@ export function Game({ view, mode, code, isHost, onAct, onBackToLobby, onLeave, 
               isYou={false}
               canPick={iPick && !p.eliminated && p.placed.some((s) => !s.revealed)}
               onPick={() => onAct({ k: "reveal", targetId: p.id })}
+              order={orderOf.get(p.id)}
             />
           ))}
         </div>
@@ -278,7 +341,7 @@ export function Game({ view, mode, code, isHost, onAct, onBackToLobby, onLeave, 
         <div className="ticker" key={r?.log.length}>{lastLog}</div>
 
         <div className="you-zone">
-          <Pod p={me} view={view} isYou canPick={false} onPick={() => {}} />
+          <Pod p={me} view={view} isYou canPick={false} onPick={() => {}} order={orderOf.get(me.id)} />
 
           {!me.eliminated && view.phase === "playing" && (
             <div className="controls">

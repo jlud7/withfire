@@ -113,8 +113,8 @@ export function newGame(players: Player[]): GameState {
  * counts and clears placed cards. The given starterId leads.
  *
  * IMPORTANT: all placed cards return to their owner's hand at round
- * start. The game never "collects" cards — winning only awards a
- * Burn Mark; losing only discards one owned card. This is canonical
+ * start. The game never "collects" cards — winning only awards an
+ * Ember; losing only discards one owned card. This is canonical
  * Skull rules.
  */
 export function beginRound(s: GameState, starterId: string): GameState {
@@ -407,7 +407,7 @@ function discardRandomOwnedCard(
  * if already resolved, returns state unchanged.
  *
  * Consequences:
- *   - Survived → Challenger gains 1 Burn Mark. If they hit 2, they win.
+ *   - Survived → Challenger claims 1 Ember. If they hit 2, they win.
  *   - Burned → Challenger discards 1 randomly chosen owned card.
  *             The card type is recorded in `round.burnedCard` for
  *             internal use, but UI MUST NOT display this to other
@@ -432,7 +432,7 @@ export function resolveRound(s: GameState, rand: () => number = Math.random): Ga
 
   if (!rv.burned) {
     darer.points += 1;
-    log.push(`${darer.name} earns a Burn Mark! (${darer.points}/2)`);
+    log.push(`${darer.name} claims an Ember! (${darer.points}/2)`);
     if (darer.points >= 2) outcomeWin = darer.id;
   } else {
     const lost = discardRandomOwnedCard(darer.ownedFlower, darer.ownedFire, rand);

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Embers } from "./components/Embers";
+import { CursorSparks } from "./components/CursorSparks";
 import { Rules } from "./components/Rules";
 import { Home } from "./screens/Home";
 import { Lobby } from "./screens/Lobby";
@@ -117,6 +118,7 @@ export function App() {
   return (
     <div className="app">
       <Embers />
+      <CursorSparks />
       {screen}
       {state?.reconnecting && (
         <div className="reconnect-banner">Connection lost — rejoining the room…</div>

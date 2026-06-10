@@ -25,9 +25,9 @@ export function Rules({ onClose }: { onClose: () => void }) {
               stack first, then any opponents' top cards, until they hit the target… or a Fire.
             </li>
             <li>
-              <strong>Win or burn.</strong> Survive and you earn a Burn Mark —{" "}
-              <strong>two Burn Marks wins the game</strong>. Hit Fire and you lose one of
-              your four cards at random, face down. Run out of cards and you're out.
+              <strong>Win or burn.</strong> Survive and you claim an <strong>Ember</strong> 🔥
+              — <strong>two Embers win the game</strong>. Hit Fire and you got burned: you
+              lose one of your four cards at random, face down. Run out of cards and you're out.
             </li>
           </ol>
           <p className="rules-tip">

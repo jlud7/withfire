@@ -61,7 +61,7 @@ body {
   opacity: 0.8;
 }
 
-.app > *:not(.embers) {
+.app > *:not(.embers):not(.cursor-sparks) {
   position: relative;
   z-index: 1;
 }
@@ -230,6 +230,27 @@ em {
 
 .chip-out {
   color: #8d8d8d;
+}
+
+.chip-turn {
+  color: #ffe2b8;
+  border-color: rgba(255, 176, 31, 0.55);
+  background: rgba(255, 122, 26, 0.16);
+}
+
+.chip-turn::after {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  text-align: left;
+  animation: thinkDots 1.4s steps(1) infinite;
+}
+
+@keyframes thinkDots {
+  0% { content: ""; }
+  25% { content: "."; }
+  50% { content: ".."; }
+  75% { content: "..."; }
 }
 
 .chip-code {
@@ -578,6 +599,28 @@ em {
   animation: cardPulse 1.3s ease-in-out infinite;
 }
 
+/* Private corner index — only rendered on the owner's own cards. */
+.card-badge {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 21px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+  font-size: 0.68rem;
+  line-height: 1;
+  border-radius: 50%;
+  background: rgba(12, 5, 3, 0.88);
+  border: 1px solid rgba(255, 176, 31, 0.55);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.55);
+}
+
+.card-badge-fire {
+  border-color: rgba(255, 82, 48, 0.85);
+  box-shadow: 0 0 9px rgba(255, 82, 48, 0.45), 0 1px 5px rgba(0, 0, 0, 0.55);
+}
+
 @keyframes cardPulse {
   0%, 100% { filter: drop-shadow(0 0 4px rgba(255, 176, 31, 0.35)) drop-shadow(0 4px 8px rgba(0,0,0,0.45)); transform: translateY(0); }
   50% { filter: drop-shadow(0 0 16px rgba(255, 176, 31, 0.9)) drop-shadow(0 4px 8px rgba(0,0,0,0.45)); transform: translateY(-4px); }
@@ -610,6 +653,17 @@ em {
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
+  padding: 0.9rem 0.9rem 1rem;
+  border-radius: 28px;
+  background:
+    radial-gradient(ellipse 130% 95% at 50% 42%, rgba(74, 30, 16, 0.75) 0%, rgba(43, 16, 9, 0.85) 52%, rgba(22, 9, 5, 0.92) 100%);
+  border: 1px solid rgba(255, 150, 70, 0.16);
+  box-shadow:
+    inset 0 0 70px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 180, 100, 0.07),
+    0 0 0 5px rgba(20, 8, 4, 0.85),
+    0 0 0 6px rgba(255, 150, 70, 0.1),
+    0 16px 44px rgba(0, 0, 0, 0.5);
 }
 
 .table.is-shake {
@@ -681,6 +735,25 @@ em {
 .pod-name {
   font-weight: 800;
   font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+}
+
+/* Turn-order token: 1 leads the round, play proceeds in number order. */
+.seat-token {
+  width: 19px;
+  height: 19px;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  font-size: 0.68rem;
+  font-weight: 800;
+  font-family: "Inter", system-ui, sans-serif;
+  border-radius: 50%;
+  background: rgba(255, 122, 26, 0.16);
+  border: 1px solid rgba(255, 176, 31, 0.35);
+  color: var(--accent-hot);
 }
 
 .pod-sub {
@@ -739,14 +812,72 @@ em {
   align-items: center;
   min-height: 66px;
   padding: 0.2rem 0;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.stack .card + .card {
+.stack-slot {
+  position: relative;
+  flex: none;
+  animation: dealIn 0.45s cubic-bezier(0.2, 0.8, 0.3, 1.1);
+  transition: margin-left 0.25s ease;
+}
+
+@keyframes dealIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) rotate(7deg) scale(1.08);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0) scale(1);
+  }
+}
+
+.stack .stack-slot + .stack-slot {
   margin-left: -22px;
 }
 
-.stack .card-md + .card-md {
-  margin-left: -28px;
+.pod-you .stack .stack-slot + .stack-slot {
+  margin-left: -26px;
+}
+
+.stack .card {
+  transition: transform 0.25s ease;
+}
+
+/* Lift your stack toward you, like picking it up to peek. */
+.pod-you .stack {
+  cursor: grab;
+  padding-top: 1.1rem;
+}
+
+.stack-peek .card {
+  transform: translateY(-9px);
+}
+
+.stack-peek .stack-slot + .stack-slot {
+  margin-left: -14px;
+}
+
+.stack-top-tag {
+  position: absolute;
+  top: -0.95rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.55rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent-hot);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.stack-hint {
+  font-size: 0.7rem;
+  color: var(--ink-dim);
+  letter-spacing: 0.03em;
 }
 
 .stack-empty {
@@ -758,31 +889,6 @@ em {
 
 .stack-pickable {
   border-radius: 12px;
-}
-
-.peek {
-  margin-left: 0.7rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  font-size: 0.72rem;
-  line-height: 1.15;
-  background: rgba(0, 0, 0, 0.35);
-  padding: 0.25rem 0.4rem;
-  border-radius: 8px;
-  border: 1px dashed rgba(255, 170, 90, 0.25);
-}
-
-.peek::before {
-  content: "yours";
-  font-size: 0.55rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--ink-dim);
-}
-
-.peek-dot.peek-rev {
-  opacity: 0.35;
 }
 
 /* ---------- stage ---------- */
@@ -834,6 +940,34 @@ em {
   padding: 0.3rem 0.7rem;
 }
 
+.stage-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-dim);
+  opacity: 0.8;
+}
+
+.reveal-pips {
+  display: flex;
+  gap: 0.35rem;
+  font-size: 1.15rem;
+}
+
+.rpip {
+  opacity: 0.22;
+  filter: grayscale(1);
+  transition: all 0.3s ease;
+}
+
+.rpip-lit {
+  opacity: 1;
+  filter: none;
+  animation: pipPop 0.5s ease;
+  text-shadow: 0 0 12px rgba(255, 140, 30, 0.9);
+}
+
 .ticker {
   text-align: center;
   font-size: 0.82rem;
@@ -881,6 +1015,20 @@ em {
 .hand-cards {
   display: flex;
   gap: 1.1rem;
+  align-items: flex-end;
+}
+
+/* Fan the hand slightly, like cards held at a table. */
+.hand-cards .hand-slot:first-child:not(:only-child) .card {
+  transform: rotate(-5deg) translateY(2px);
+}
+
+.hand-cards .hand-slot:last-child:not(:only-child) .card {
+  transform: rotate(5deg) translateY(2px);
+}
+
+.hand-cards .card-tap:hover {
+  transform: translateY(-6px) scale(1.05) rotate(0deg);
 }
 
 .hand-slot {
@@ -1152,12 +1300,43 @@ em {
   .card-md { width: 52px; }
   .card-lg { width: 74px; }
 
-  .stack .card + .card { margin-left: -18px; }
-  .stack .card-md + .card-md { margin-left: -24px; }
+  .stack .stack-slot + .stack-slot { margin-left: -18px; }
+  .pod-you .stack .stack-slot + .stack-slot { margin-left: -22px; }
+  .stack-peek .stack-slot + .stack-slot { margin-left: -12px; }
 
   .hand-cards { gap: 0.8rem; }
 
   .stage { min-height: 70px; padding: 0.3rem 0.5rem; }
+}
+
+/* ---------- cursor ---------- */
+
+:root {
+  --cursor-arrow: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='26'%20height='26'%20viewBox='0%200%2026%2026'%3E%3Cpath%20d='M4.5%201.8%20L4.5%2019.5%20L9%2015.7%20L12%2022.8%20L15.3%2021.4%20L12.3%2014.5%20L19.3%2013.8%20Z'%20fill='%231c0c07'%20stroke='%23e8a050'%20stroke-width='1.5'%20stroke-linejoin='round'/%3E%3C/svg%3E") 4 2, auto;
+  --cursor-hot: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='26'%20height='26'%20viewBox='0%200%2026%2026'%3E%3Cpath%20d='M4.5%201.8%20L4.5%2019.5%20L9%2015.7%20L12%2022.8%20L15.3%2021.4%20L12.3%2014.5%20L19.3%2013.8%20Z'%20fill='%23ff7a1a'%20stroke='%23ffe27a'%20stroke-width='1.5'%20stroke-linejoin='round'/%3E%3Cpath%20d='M20.5%202.5%20l1%202.4%202.4%201%20-2.4%201%20-1%202.4%20-1%20-2.4%20-2.4%20-1%202.4%20-1%20Z'%20fill='%23ffe27a'/%3E%3C/svg%3E") 4 2, pointer;
+}
+
+body {
+  cursor: var(--cursor-arrow);
+}
+
+/* Anything you can act on lights the cursor up. */
+button:not(:disabled),
+a,
+[role="button"],
+.card-tap,
+.seg-btn,
+.pod-you .stack {
+  cursor: var(--cursor-hot);
+}
+
+.cursor-sparks {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 90;
 }
 
 @media (prefers-reduced-motion: reduce) {

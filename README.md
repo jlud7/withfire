@@ -4,7 +4,7 @@ A bluffing card game of flowers and flames (Skull-family, 2–5 players) — pla
 browser with **real online multiplayer** (room keys) or **solo against AI**.
 
 Every card you place is a Flower… except the one Fire in your hand. Dare to flip cards
-without hitting Fire and you earn a Burn Mark — two Burn Marks wins. Flip a Fire and you
+without hitting Fire and you claim an Ember — two Embers win. Flip a Fire and you
 lose one of your own cards, face down, forever.
 
 ## Play it
@@ -84,5 +84,5 @@ Any Node ≥ 18 host works (Render, Railway, Fly.io, a VPS). One service, no dat
 Place a card face down each turn (or keep placing on later turns). At any point after the
 opening go-around, **challenge**: claim you can flip N cards without hitting Fire. Others
 must raise your number or step back. Last claimant flips — **their own stack first**, then
-any opponents' top cards. Survive: Burn Mark (2 wins). Hit Fire: lose one of your four
+any opponents' top cards. Survive: claim an Ember (2 win). Hit Fire: lose one of your four
 cards at random. Lose all four and you're ash.

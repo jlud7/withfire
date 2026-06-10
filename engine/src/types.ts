@@ -30,7 +30,7 @@ export interface Player {
    *  placed[0] is the first card down; placed[length-1] is most recent (top). */
   placed: { kind: CardKind }[];
 
-  /** Burn Marks (points). First to 2 wins. */
+  /** Embers (points). First to 2 wins. */
   points: number;
 
   /** Once true, this player is out of the game (ran out of owned cards). */

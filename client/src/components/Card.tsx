@@ -116,6 +116,7 @@ export function CardFace({
   onClick,
   pulse,
   title,
+  badge,
 }: {
   kind: CardFaceKind;
   /** When set, renders a 3D flip from back → face. */
@@ -124,6 +125,8 @@ export function CardFace({
   onClick?: () => void;
   pulse?: boolean;
   title?: string;
+  /** Private corner index on the card back — what the owner placed. */
+  badge?: CardKind;
 }) {
   const face = kind === "fire" ? <FireArt /> : <FlowerArt />;
   const interactive = !!onClick;
@@ -149,7 +152,14 @@ export function CardFace({
       title={title}
     >
       <div className="card-3d-inner">
-        <div className="card-3d-back"><BackArt /></div>
+        <div className="card-3d-back">
+          <BackArt />
+          {badge && (
+            <span className={`card-badge ${badge === "fire" ? "card-badge-fire" : ""}`} aria-hidden>
+              {badge === "fire" ? "🔥" : "🌸"}
+            </span>
+          )}
+        </div>
         <div className={`card-3d-face ${kind === "fire" ? "face-fire" : "face-flower"}`}>{face}</div>
       </div>
     </div>
