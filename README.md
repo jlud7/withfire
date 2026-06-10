@@ -55,7 +55,21 @@ npm run typecheck    # typecheck all workspaces
 npm test             # engine smoke test
 ```
 
-## Deploying
+## GitHub Pages (solo only, free)
+
+Pages is static hosting, so it can't run the multiplayer server — but **solo vs AI runs
+entirely in the browser** and works great there. This repo ships a workflow
+(`.github/workflows/pages.yml`) that deploys the client on every push to `main`.
+
+One-time setup: **repo Settings → Pages → Source: "GitHub Actions"**. Your game then
+lives at `https://<user>.github.io/withfire/`.
+
+Want online rooms from the Pages site too? Host the server anywhere (next section),
+then add a repository **Actions variable** `WS_URL` set to its WebSocket endpoint
+(e.g. `wss://withfire.onrender.com/ws`) and re-run the deploy — the Pages client will
+use that server for online play.
+
+## Deploying the full game (online multiplayer)
 
 Any Node ≥ 18 host works (Render, Railway, Fly.io, a VPS). One service, no database:
 

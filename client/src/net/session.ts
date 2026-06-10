@@ -42,6 +42,26 @@ export interface GameSession {
   leave(): void;
 }
 
+/**
+ * Where the game server lives. Normally the same host that served the
+ * page (the Node server serves both). A static deployment (e.g. GitHub
+ * Pages) has no server — set VITE_WS_URL at build time to point at one
+ * hosted elsewhere, e.g. wss://withfire.onrender.com/ws.
+ */
+export function gameServerUrl(): string {
+  const override = import.meta.env.VITE_WS_URL as string | undefined;
+  if (override) return override;
+  const proto = location.protocol === "https:" ? "wss" : "ws";
+  return `${proto}://${location.host}/ws`;
+}
+
+/** True when online play can work from this deployment. */
+export function onlineAvailable(): boolean {
+  if (import.meta.env.VITE_WS_URL) return true;
+  // GitHub Pages (and similar static hosts) can't run the WebSocket server.
+  return !location.hostname.endsWith(".github.io");
+}
+
 const REJOIN_KEY = "withfire:rejoin";
 
 export function saveRejoin(code: string, token: string, name: string) {
@@ -120,8 +140,7 @@ export class OnlineSession extends BaseSession {
   }
 
   private wsUrl(): string {
-    const proto = location.protocol === "https:" ? "wss" : "ws";
-    return `${proto}://${location.host}/ws`;
+    return gameServerUrl();
   }
 
   private connect() {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CardFace } from "../components/Card";
+import { onlineAvailable } from "../net/session";
 
 export interface HomeProps {
   initialName: string;
@@ -17,6 +18,7 @@ export function Home({ initialName, initialCode, onCreate, onJoin, onSolo, onSho
   const [bots, setBots] = useState(2);
 
   const named = name.trim().length > 0;
+  const online = onlineAvailable();
 
   return (
     <div className="home">
@@ -52,15 +54,29 @@ export function Home({ initialName, initialCode, onCreate, onJoin, onSolo, onSho
 
         {panel === "main" && (
           <div className="home-actions">
-            <button className="btn btn-primary" disabled={!named} onClick={() => onCreate(name.trim())}>
+            <button
+              className={online ? "btn btn-primary" : "btn"}
+              disabled={!named || !online}
+              onClick={() => onCreate(name.trim())}
+            >
               Create a room
             </button>
-            <button className="btn" disabled={!named} onClick={() => setPanel("join")}>
+            <button className="btn" disabled={!named || !online} onClick={() => setPanel("join")}>
               Join with a key
             </button>
-            <button className="btn" disabled={!named} onClick={() => setPanel("solo")}>
+            <button
+              className={online ? "btn" : "btn btn-primary"}
+              disabled={!named}
+              onClick={() => setPanel("solo")}
+            >
               Play solo vs AI
             </button>
+            {!online && (
+              <p className="static-note">
+                Online rooms need the game server, which this static site doesn't include —
+                solo play works fully. See the README to host multiplayer for free.
+              </p>
+            )}
             <button className="btn-ghost rules-link" onClick={onShowRules}>
               How to play
             </button>
