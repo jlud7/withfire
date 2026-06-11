@@ -1,0 +1,14 @@
+# Render blueprint — deploys the full game (client + WebSocket server)
+# as one free web service. In the Render dashboard: New → Blueprint →
+# select this repo and apply.
+#
+# Free-tier note: the service sleeps after ~15 idle minutes and takes
+# ~30–60s to wake on the next visit. Upgrade the plan to avoid that.
+services:
+  - type: web
+    name: withfire
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /
